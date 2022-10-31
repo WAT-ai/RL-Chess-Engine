@@ -1,9 +1,14 @@
+import chess
 
-class ChessEnv:
 
-    def __init__(self):
-        self.state = None  # TODO: initialize state to starting position, deside what type state should be
-        pass
+class ChessEnv(chess.Board):
+
+    def __init__(self, fen: str = None):
+        """
+        Initialize the environment.
+        :param fen: standard fen chess position, string
+        """
+        super().__init__(fen=fen)
 
     def reset(self, state=None):
         """
