@@ -3,7 +3,11 @@ import chess
 
 class ChessEnv(chess.Board):
 
-    def __init__(self, fen=None):
+    def __init__(self, fen: str = None):
+        """
+        Initialize the environment.
+        :param fen: standard fen chess position, string
+        """
         super().__init__(fen=fen)
 
     def reset(self, state=None):
