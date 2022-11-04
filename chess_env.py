@@ -16,6 +16,8 @@ class ChessEnv(chess.Board):
         :param state:
         :return:
         """
+        if state == None:
+            self.reset()
         pass
 
     def step(self, move):
