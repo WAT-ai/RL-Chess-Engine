@@ -1,4 +1,5 @@
 import chess
+import numpy as np
 
 
 class ChessEnv(chess.Board):
@@ -18,6 +19,7 @@ class ChessEnv(chess.Board):
         """
         if state == None:
             self.reset()
+
         pass
 
     def step(self, move):
@@ -40,6 +42,7 @@ class ChessEnv(chess.Board):
         Get the current state of the environment.
         :return:
         """
+        return self
         pass
 
     def get_reward(self):
@@ -53,7 +56,10 @@ class ChessEnv(chess.Board):
 def state_to_alpha_zero_input(state):
     """
     Convert the state to the format expected by the AlphaZero model.
-    :param state:
+    :param state: 
     :return:
     """
+    
     pass
+
+    
