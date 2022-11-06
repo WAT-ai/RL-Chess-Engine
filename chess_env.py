@@ -26,12 +26,17 @@ class ChessEnv(chess.Board):
         """
         pass
 
-    def get_possible_moves(self):
+    def get_possible_moves(self): #returns a list
         """
         Get all legal moves from the current state.
         :return:
         """
-        pass
+        possible_moves = []
+
+        for move in self.legal_moves:
+            possible_moves.append(move)
+
+        return possible_moves
 
     def get_state(self):
         """
