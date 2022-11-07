@@ -18,6 +18,9 @@ class ChessEnv(chess.Board):
         """
         if state == None:
             self.reset()
+        else:
+            if(isinstance(state, str)):
+                super().__init__(fen=state)
         pass
 
     def step(self, move):
