@@ -33,16 +33,12 @@ class ChessEnv(chess.Board):
 
         return None
 
-    def get_possible_moves(self): #returns a list
+    def get_possible_moves(self): # returns list of items in the form: Move.from_uci('a2a3')
         """
         Get all legal moves from the current state.
         :return:
         """
-        possible_moves = []
-
-        for move in self.legal_moves:
-            possible_moves.append(move)
-
+        possible_moves = list(self.legal_moves)
         return possible_moves
 
     def get_state(self):
