@@ -18,7 +18,7 @@ class ChessEnv(chess.Board):
         """
         pass
 
-    def step(self, move): #move assumed to be in the following format: move = chess.Move.from_uci("g1f3")
+    def step(self, move): # move param needs to be in the following format: move = chess.Move.from_uci("g1f3")
         """
         Make a move in the environment.
         :param move:
@@ -26,10 +26,9 @@ class ChessEnv(chess.Board):
         """
 
         if move not in self.legal_moves: #check if the move is legal
-            print("This move is not a legal move")
+            raise Exception("The move is not in legal_moves")
         else:
             self.push(move)
-            print(self)
 
         return None
 
