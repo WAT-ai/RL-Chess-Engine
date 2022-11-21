@@ -1,74 +1,94 @@
 
 import math
-import random
-from typing import Optional
 from chess_env import *
 
 class MCTS:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, board_state, value_model, policy_model):
+        self.board_state = board_state
+        self.value_model = value_model
+        self.policy_model = policy_model
 
-        pass
+    def search(self):
+        """
+        MCTS algorithm, select, expand, backpropagate.
+        """
+        root = Node(self.board_state, None, 0)
 
-    def search(self, *args, **kwargs):
-        pass
+        move_probabilities = self.policy_model.predict(self.board_state) 
+        root.expand(move_probabilities)
+
+        for _ in range(1000):
+            node = root
+            
+            # Select a leaf node
+            while node.is_expanded():
+                last_node = node
+                node = node.select_child()
+                if node is None:
+                    node = last_node
+                    break
+        
+            # Get the value of the leaf node
+            value = self.value_model.predict(node.board_state)
+
+            # TODO: 
+            if (value == 0):
+                # If the game is a draw (from the perspective of the value network), continue expansion
+                move_probabilities = self.policy_model.predict(self.board_state) 
+                node.expand(move_probabilities)
+
+            node.backpropagate(value)
 
 class Node:
-    def __init__(self) -> None:
-        self.environment = ChessEnv()
-        self.w_i = 0
-        self.n_i = 0
-        self.n = 0
-        self.parent = None
-        self.children = set()
+    def __init__(self, board_state, parent, prior):
+        self.board_state = board_state
+        self.prior = prior
+        self.value_sum = 0
+        self.visit_count = 0
+        self.children = {}
+        self.parent = parent
 
-# https://www.chessprogramming.org/UCT
-# https://en.wikipedia.org/wiki/Monte_Carlo_tree_search#Exploration_and_exploitation
-# w_i : the number of wins for the node after the i-th move
-# n : the number of times the parent has been visited (total number of simulations after i_th move run by parent node)
-# n_i: the number of simulations for the node after the i_th move
-# c : exploration parameter, theoretically sqrt(2) 
-# The first component corresponds to exploitation, as it is high for moves with high average win ratio
-# The second component corresponds to exploration, as it is high for few simulations 
-# Thus, in selection, we maximize this value
-def ucb_score(node : Node, c = math.sqrt(2)):
-    return node.w_i / node.n + c * math.sqrt(math.log(node.n, math.e) / node.n_i) 
+    def is_expanded(self):
+        """
+        Check if current node is expanded.
+        """
+        return len(self.children) > 0
 
-# Select child node i such that ucb1 is maximized
-def selection(node : Node) -> Node:
-    selected_child = node
-    max_ucb = -math.inf
-    for child in node.children:
-        child_ucb = ucb_score(child)
-        if (child_ucb > max_ucb):
-            max_ucb = child_ucb
-            selected_child = child
-    return selected_child
+    # https://joshvarty.github.io/AlphaZero/
+    # https://www.chessprogramming.org/UCT
+    def ucb_score(self):
+        """
+        Calculate the UCB score for the given node.
+        """
+        return self.value_sum + self.prior * math.sqrt(math.log(self.parent.visit_count, math.e) / self.visit_count) 
+        
+    def expand(self, move_probabilities):
+        """
+        Expand current node based on the possible moves.
+        """
+        for move, prob in move_probabilities:
+            self.children[move] = (Node(self.board_state.step(move), self, prob))
 
-# Continue creating child nodes, and picking the child with highest UCB
-def expansion(node : Node) -> Node:
-    # Return current node if leaf node
-    if (len(node.children) == 0):
-        return node
-    selected_child = node
-    max_ucb = -math.inf
-    for child in node.children:
-        child_ucb = ucb_score(child)
-        if (child_ucb > max_ucb):
-            max_ucb = child_ucb
-            selected_child = child
-    return expansion(selected_child)
-    
-# A simulation is performed by choosing uniformly random moves until the game ends
-# by draw, win, or loss
-def rollout(node : Node) -> tuple[Optional[float], Node]:
-    if (node.environment.get_reward() != None):
-        return (node.environment.get_reward(), node)
-    
-    # get list of all possible moves from current state
-    # use the policy network (given a state, output a probability distribution over all possible moves)
-    child = random.choice(node.environment.get_possible_moves())
-    return rollout(child)
+    def select_child(self):
+        """
+        Select child node with highest UCB score.
+        """
+        highest_ucb = -math.inf
+        selected_child = None
 
-# Use result of rollout and update parent node
-def backpropagation():
-    pass
+        for child in self.children:
+            ucb = child.ucb_score()
+            if ucb > highest_ucb:
+                highest_ucb = ucb
+                selected_child = child
+        
+        return selected_child
+
+    def backpropagate(self, value):
+        """
+        Backpropagate the value of the current node up to the root node.
+        """
+        self.value_sum += value
+        self.visit_count += 1
+
+        self.parent.backpropagate()
