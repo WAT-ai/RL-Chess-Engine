@@ -24,20 +24,27 @@ class ChessEnv(chess.Board):
                 super().__init__(fen=state)
         pass
 
-    def step(self, move):
+    def step(self, move): # move param needs to be in the following format: move = chess.Move.from_uci("g1f3")
         """
         Make a move in the environment.
         :param move:
         :return:
         """
-        pass
 
-    def get_possible_moves(self):
+        if move not in self.legal_moves: #check if the move is legal
+            raise Exception("The move is not in legal_moves")
+        else:
+            self.push(move)
+
+        return None
+
+    def get_possible_moves(self): # returns list of items in the form: Move.from_uci('a2a3')
         """
         Get all legal moves from the current state.
         :return:
         """
-        pass
+        possible_moves = list(self.legal_moves)
+        return possible_moves
 
     def get_state(self):
         """
