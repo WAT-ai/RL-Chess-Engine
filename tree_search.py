@@ -43,11 +43,12 @@ class MCTS:
                 move_probabilities = self.policy_model.predict(self.board_state) 
                 node.expand(move_probabilities)
 
-            node.backpropagate(value)
+            node.backpropagate(value, node.player)
 
 class Node:
     def __init__(self, board_state, parent, prior):
         self.board_state = board_state
+        self.player = board_state.turn
         self.prior = prior
         self.value_sum = 0 # TODO: Handle values for both players, e.g. value network may return -0.7 for the value for black
         self.visit_count = 0
@@ -90,16 +91,20 @@ class Node:
         
         return selected_child
 
-    def backpropagate(self, value):
+    def backpropagate(self, value, player):
         """
         Backpropagate the value of the current node up to the root node.
         """
-        self.value_sum += value
+        if (self.player == player):
+            self.value_sum += value
+        else:
+            self.value_sum -= player
+
         self.visit_count += 1
 
-        self.parent.backpropagate()
+        self.parent.backpropagate(value, player * -1)
 
-    def select_move(self, temperature):
+    def select_move(self):
         """
         Select move based on the visit distribution of the root node,
         which can be optionally adjusted by a temperature parameter.
@@ -109,10 +114,10 @@ class Node:
         P[a | s] = N(s, a)^{1 / t} / sum_b{N(s, b)^{1 / t}}
         where N(s, a) is the number of times action a was taken in state s
         """
-        if (temperature == 0):
-            # Select move with highest visit count
-            pass
-        else:
-            # Select move based on visit distribution
-            pass
-        pass
+        # Select action a with highest visit count
+        visit_counts = [child.visit_count for child in self.children]
+        moves = [move for move in self.children.keys()]
+        max_visit_count = max(visit_counts)
+        index = visit_counts.index(max_visit_count)
+        return moves[index]
+
