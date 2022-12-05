@@ -120,4 +120,3 @@ class Node:
         max_visit_count = max(visit_counts)
         index = visit_counts.index(max_visit_count)
         return moves[index]
-
