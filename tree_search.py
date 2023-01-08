@@ -1,3 +1,5 @@
+import torch
+
 
 class MCTS:
     """
@@ -41,3 +43,15 @@ class MCTS:
         pass
 
 
+def get_move_scores(model, possible_states):
+    """
+    Get the scores (values) for each possible move.
+    :param model: model to evaluate the state, should output policy and value
+    :param possible_states: states to check
+    :return:
+    """
+    values = []
+    for state in possible_states:
+        value = model(torch.tensor(state, dtype=torch.float))[1]
+        values.append(value)
+    return torch.tensor(values)
