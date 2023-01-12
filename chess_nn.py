@@ -33,6 +33,28 @@ class ChessNN(nn.Module):
     """
     def __init__(self):
         super(ChessNN, self).__init__()
+        self.network = nn.Sequential(
+            """
+            First Convolutional Block
+            """
+            nn.Conv2d(ask thomas, 256, 32, kernel_size = 3, stride = 1),
+            nn.BatchNorm2d(256)
+            nn.ReLU(),
+            
+            """
+            Residual Block
+            Make 39 of these residual blocks without repeating
+            """
+            nn.Conv2d(256, 256, 32, kernel_size = 3, stride = 1),
+            nn.BatchNorm2d(256)
+            nn.ReLU(),
+            nn.Conv2d(256, 256, 32, kernel_size = 3, stride = 1),
+            nn.BatchNorm2d(256),
+            ''' Implement skip connection layer'''
+            nn.ReLU(),
+            
+            
+        )
         self.policy = PolicyNN()
         self.value = ValueNN()
 
