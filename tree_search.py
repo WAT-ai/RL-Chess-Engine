@@ -1,15 +1,25 @@
-
 import math
+import torch
 from chess_env import *
 
 num_simulations = 100
 stop_threshold = 0.1
 
 class MCTS:
-    def __init__(self, board_state, value_model, policy_model):
-        self.board_state = board_state
-        self.value_model = value_model
-        self.policy_model = policy_model
+    def __init__(
+        self,
+        initial_state: str,
+        model: torch.nn.Module,
+        environment: Any,
+        state_to_model_input: Callable[[Any], torch.Tensor],
+        policy_to_move_probabilities: Callable[[torch.Tensor], Dict[Any, float]]
+    ):
+
+        self.board_state = initial_state
+        self.model = model
+        self.environment = environment
+        self.state_to_model_input = state_to_model_input
+        self.policy_to_move_probabilities = policy_to_move_probabilities
 
     def search(self):
         """
@@ -17,7 +27,9 @@ class MCTS:
         """
         root = Node(self.board_state, None, 0)
 
-        move_probabilities = self.policy_model.predict(self.board_state) 
+        policy = self.model(self.state_to_model_input(self.board_state))
+        move_probabilities = self.policy_to_move_probabilities(policy)
+
         root.expand(move_probabilities)
 
         for _ in range(num_simulations):
@@ -31,11 +43,8 @@ class MCTS:
                     node = last_node
                     break
         
-            # Get the value of the leaf node
-            # If the leaf node is a terminal node, the value is one of [-1, 0, +1], otherwise use value network
-            value = node.board_state.get_reward() 
-            if value is None:
-                value = self.value_model.predict(node.board_state)
+            value = self.model(self.state_to_model_input(node.board_state))
+            value = value[0]
 
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
@@ -50,7 +59,7 @@ class Node:
         self.board_state = board_state
         self.player = board_state.turn
         self.prior = prior
-        self.value_sum = 0 # TODO: Handle values for both players, e.g. value network may return -0.7 for the value for black
+        self.value_sum = 0
         self.visit_count = 0
         self.children = {}
         self.parent = parent
@@ -73,8 +82,11 @@ class Node:
         """
         Expand current node based on the possible moves.
         """
+        board = chess.Board(self.board_state)
         for move, prob in move_probabilities:
-            self.children[move] = (Node(self.board_state.step(move), self, prob))
+            board.push(move)
+            self.children[move] = (Node(board.fen(), self, prob))
+            board.pop()
 
     def select_child(self):
         """
