@@ -14,7 +14,7 @@ class MCTS:
         state_to_model_input: Callable[[Any], torch.Tensor],
         policy_to_move_probabilities: Callable[[torch.Tensor], Dict[Any, float]]
     ):
-        self.board_state = initial_state
+        self.root = Node(initial_state, 1, None, 0)
         self.model = model
         self.environment = environment
         self.state_to_model_input = state_to_model_input
@@ -25,15 +25,13 @@ class MCTS:
         """
         MCTS algorithm, select, expand, backpropagate.
         """
-        root = Node(self.board_state, None, 0)
-
-        policy = self.model(self.state_to_model_input(self.board_state))
+        policy = self.model(self.state_to_model_input(self.root.board_state))
         move_probabilities = self.policy_to_move_probabilities(policy)
 
-        root.expand(move_probabilities)
+        self.root.expand(move_probabilities)
 
         for _ in range(num_simulations):
-            node = root
+            node = self.root
             
             # Select a leaf node
             while node.is_expanded():
@@ -49,15 +47,29 @@ class MCTS:
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
                 # If the game is a draw (from the perspective of the value network), continue expansion
-                move_probabilities = self.policy_model.predict(self.board_state) 
+                move_probabilities = self.policy_model.predict(self.root.board_state) 
                 node.expand(move_probabilities)
 
             node.backpropagate(value, node.player)
+    
+    def update_state(self, move: Any):
+        """
+        Update the board state based on the given move.
+        """
+        self.root = self.root.children[move]
+
+
+    def get_root(self):
+        """
+        Return the root node.
+        """
+        return self.root
+
 
 class Node:
-    def __init__(self, board_state, parent, prior):
+    def __init__(self, board_state, player, parent, prior):
         self.board_state = board_state
-        self.player = board_state.turn
+        self.player = player
         self.prior = prior
         self.value_sum = 0
         self.visit_count = 0
@@ -84,10 +96,10 @@ class Node:
         """
         Expand current node based on the possible moves.
         """
-        board = chess.Board(self.board_state)
+        board = chess.Board(self.root.board_state)
         for move, prob in move_probabilities:
             board.push(move)
-            self.children[move] = (Node(board.fen(), self, prob))
+            self.children[move] = (Node(board.fen(), self.player * - 1, self, prob))
             board.pop()
 
 
