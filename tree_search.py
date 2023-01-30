@@ -14,12 +14,12 @@ class MCTS:
         state_to_model_input: Callable[[Any], torch.Tensor],
         policy_to_move_probabilities: Callable[[torch.Tensor], Dict[Any, float]]
     ):
-
         self.board_state = initial_state
         self.model = model
         self.environment = environment
         self.state_to_model_input = state_to_model_input
         self.policy_to_move_probabilities = policy_to_move_probabilities
+
 
     def search(self):
         """
@@ -72,12 +72,14 @@ class Node:
         """
         return self.value_sum + self.prior * math.sqrt(math.log(self.parent.visit_count + 1, math.e) / self.visit_count + 1)
 
+
     def is_expanded(self):
         """
         Check if current node is expanded.
         """
         return len(self.children) > 0
         
+
     def expand(self, move_probabilities):
         """
         Expand current node based on the possible moves.
@@ -87,6 +89,7 @@ class Node:
             board.push(move)
             self.children[move] = (Node(board.fen(), self, prob))
             board.pop()
+
 
     def select_child(self):
         """
@@ -103,6 +106,7 @@ class Node:
         
         return selected_child
 
+
     def backpropagate(self, value, player):
         """
         Backpropagate the value of the current node up to the root node.
@@ -115,6 +119,7 @@ class Node:
         self.visit_count += 1
 
         self.parent.backpropagate(value, player * -1)
+
 
     def select_move(self):
         """
