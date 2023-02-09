@@ -58,9 +58,10 @@ class ChessEnv(chess.Board):
         return 1 if win for white, 0 for draw, -1 for loss for white, None if game is not over
         :return:
         """
-        if self.is_game_over:
-            # self.outcome().winner is true if white wins, false if black wins and none if it's a draw
-            return 1 if self.outcome().winner else (-1 if self.outcome().winner is False else 0)
+        if self.is_game_over():
+            # self.result() = '1-0' if white wins, '0-1' if black wins, '1/2-1/2' if draw
+            white_result = self.result().split('-')[0]
+            return 1 if white_result == '1' else (-1 if white_result == '0' else 0)
         return None
 
 
