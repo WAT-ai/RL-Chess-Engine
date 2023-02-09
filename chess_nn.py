@@ -83,7 +83,7 @@ class ConvBlock(nn.Module):
     def __init__(self) -> None:
         super().__init__()
 
-        self.convNet = nn.Conv2d(12, 256, kernel_size = 3,  stride=1, padding="same")
+        self.convNet = nn.Conv2d(19, 256, kernel_size = 3,  stride=1, padding="same")
         self.bn = nn.BatchNorm2d(256)
         self.relu = nn.ReLU()
 
