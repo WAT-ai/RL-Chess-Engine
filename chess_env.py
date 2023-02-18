@@ -18,7 +18,7 @@ class ChessEnv(chess.Board):
         :return:
         """
         if state == None:
-            self.reset()
+            self.reset_board()
         else:
             if(isinstance(state, str)):
                 super().__init__(fen=state)
@@ -72,9 +72,9 @@ def state_to_alpha_zero_input(state):
     :return:
     """
     # state is of type chess.board
-    if(type(state) == chess.Board):
+    if(isinstance(state, chess.Board)):
         # initially it was 8 by 8 by 14, but the last two matrices are used for repition checking, but those values can be represented as a boolean
-        array = np.zeros((8, 8, 12), dtype=np.int)
+        array = np.zeros((8, 8, 19), dtype=np.int)
 
         for square, piece in state.piece_map().items():
             rank, file = chess.square_rank(square), chess.square_file(square)
@@ -92,6 +92,15 @@ def state_to_alpha_zero_input(state):
 
             array[rank, file, idx + offset] = 1
 
+        array[:,:,12] = state.is_repetition(3)
+        array[:, :, 13] = state.has_kingside_castling_rights(color=chess.WHITE)
+        array[:, :, 14] = state.has_queenside_castling_rights(color=chess.WHITE)
+        array[:, :, 15] = state.has_kingside_castling_rights(color=chess.BLACK)
+        array[:, :, 16] = state.has_queenside_castling_rights(color=chess.BLACK)
+        array[:, :, 17] = state.halfmove_clock
+        array[:, :, 18] = state.turn
+        
+
         # Repetition counters  #is_repetition returns true if this board position was repeated 2 or 3 times. If repitition occurs 3 times, it would be an automatic draw. Also, reptition two times is not needed
         # False gets converted into a zero matrix
         #array[:, :, 12] = state.is_repetition(2)
@@ -100,4 +109,4 @@ def state_to_alpha_zero_input(state):
         # instead of 8 14 by 8 matrices, we get 14 8 by 8 matrices due to the transpose
         # castling_rights represented
         # for turn, True is white's turn, and False is black's turn
-        return array.transpose(2, 0, 1), state.is_repetition(3), state.castling_rights, state.halfmove_clock, state.turn
+        return array.transpose(2, 0, 1)
