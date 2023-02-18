@@ -150,3 +150,33 @@ class Env():
                     print('| ', end='')
             print('|')
             print(' - - - - - - -')
+
+
+def predict(model, state: Tuple[np.array], white_to_move: bool):
+    """
+    Get the model's prediction for the given state.
+    :param model: the model to use
+    :param state: the state to predict
+    :param white_to_move: whether it is white's turn to move
+    :return:
+    """
+    if white_to_move:
+        state = (state[0], state[1])
+    else:
+        state = (state[1], state[0])
+    state = np.array(state).reshape(1, 2, 6, 7)
+    return model.predict(state)[0]
+
+
+def policy_predictions_to_move_probabilities(policy_predictions: np.array, legal_moves: List[int]):
+    """
+    Convert the model's policy predictions to a probability distribution over the legal moves.
+    :param policy_predictions: the model's policy predictions
+    :param legal_moves: the legal moves
+    :return:
+    """
+    move_probabilities = np.zeros(7)
+    for i in range(7):
+        if i in legal_moves:
+            move_probabilities[i] = policy_predictions[i]
+    return zip(range(7), move_probabilities)

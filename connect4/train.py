@@ -1,7 +1,7 @@
-from env import Env
+from env import Env, policy_predictions_to_move_probabilities
 from nn import Connect4NN
 import torch
-from tree_search import get_move_scores
+from tree_search import MCTS
 from tqdm import tqdm
 
 
@@ -13,13 +13,14 @@ def play_game(model, display=False):
     """
     env = Env()
     outputs = []
+    mcts = MCTS(env.state, model, policy_predictions_to_move_probabilities, training_mode=True)
     while env.get_reward() is None:
         possible_moves = env.get_possible_moves()
         possible_states = [env.get_state_after_move(move)[0] for move in possible_moves]
-        scores = get_move_scores(model, possible_states)
-        outputs.append(scores)
-        best_move = possible_moves[torch.argmax(scores) if env.white_to_move else torch.argmin(scores)]
+        mcts.search(10)
+        best_move = mcts.current_state.get_best_move()
         env.step(best_move)
+        mcts.update_state(best_move)
         print(env.white_to_move)
         if display:
             env.display()
@@ -32,6 +33,7 @@ def train():
     Train the model.
     :return:
     """
+    memory = []
     model = Connect4NN()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = torch.nn.CrossEntropyLoss()
