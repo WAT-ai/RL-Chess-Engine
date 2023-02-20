@@ -149,3 +149,12 @@ class Node:
         max_visit_count = max(visit_counts)
         index = visit_counts.index(max_visit_count)
         return moves[index]
+
+    def get_move_probabilities(self):
+        """
+        Return the move probabilities based on the visit counts of the root node.
+        """
+        visit_counts = {move: child.visit_count for move, child in self.children.items()}
+        total_visit_count = sum(visit_counts.values())
+        move_probabilities = {move: visit_count / total_visit_count for move, visit_count in visit_counts.items()}
+        return move_probabilities
