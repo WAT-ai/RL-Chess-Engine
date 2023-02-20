@@ -70,3 +70,13 @@ def policy_to_move_probabilities(policy: np.ndarray):
     """
     move_probabilities = {m: p for m, p in zip(moves.flatten(), policy.flatten())}
     return move_probabilities
+
+
+def move_probabilities_to_policy(move_probabilities: dict):
+    """
+    Convert a dictionary of move probabilities to a policy array.
+    """
+    policy = np.zeros((73, 8, 8))
+    for move, probability in move_probabilities.items():
+        policy[moves == move] = probability
+    return policy
