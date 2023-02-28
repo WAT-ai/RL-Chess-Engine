@@ -10,13 +10,14 @@ class MCTS:
         self,
         initial_state: str,
         model: torch.nn.Module,
-        environment: Any,
+        # environment: Any,
         state_to_model_input: Callable[[Any], torch.Tensor],
         policy_to_move_probabilities: Callable[[torch.Tensor], Dict[Any, float]]
     ):
         self.root = Node(initial_state, 1, None, 0)
+        self.current_node = self.root
         self.model = model
-        self.environment = environment
+        # self.environment = environment
         self.state_to_model_input = state_to_model_input
         self.policy_to_move_probabilities = policy_to_move_probabilities
 
@@ -28,11 +29,11 @@ class MCTS:
         policy = self.model(self.state_to_model_input(self.root.board_state))
         move_probabilities = self.policy_to_move_probabilities(policy)
 
-        self.root.expand(move_probabilities)
+        self.current_node.expand(move_probabilities)
 
         for _ in range(num_simulations):
-            node = self.root
-            
+            node = self.current_node
+
             # Select a leaf node
             while node.is_expanded():
                 last_node = node
@@ -47,7 +48,7 @@ class MCTS:
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
                 # If the game is a draw (from the perspective of the value network), continue expansion
-                move_probabilities = self.policy_model.predict(self.root.board_state) 
+                move_probabilities = self.policy_model.predict(self.current_node.board_state) 
                 node.expand(move_probabilities)
 
             node.backpropagate(value, node.player)
@@ -56,14 +57,20 @@ class MCTS:
         """
         Update the board state based on the given move.
         """
-        self.root = self.root.children[move]
-
+        self.current_node = self.current_node.children[move]
+        
 
     def get_root(self):
         """
         Return the root node.
         """
         return self.root
+    
+    def get_current_node(self):
+        """
+        Return the current node.
+        """
+        return self.current_node
 
 
 class Node:
