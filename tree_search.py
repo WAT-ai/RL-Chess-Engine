@@ -82,6 +82,7 @@ class Node:
         self.visit_count = 0
         self.children = {}
         self.parent = parent
+        self.reward = 0
 
     # https://joshvarty.github.io/AlphaZero/
     # https://www.chessprogramming.org/UCT
