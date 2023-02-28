@@ -9,7 +9,10 @@ class ChessEnv(chess.Board):
         Initialize the environment.
         :param fen: standard fen chess position, string
         """
-        super().__init__(fen=fen)
+        if fen is None:
+            super().__init__()
+        else:
+            super().__init__(fen=fen)
 
     def reset(self, state=None):
         """
@@ -17,8 +20,8 @@ class ChessEnv(chess.Board):
         :param state:
         :return:
         """
-        if state == None:
-            self.reset_board()
+        if state is None:
+            super().reset()
         else:
             if(isinstance(state, str)):
                 super().__init__(fen=state)
