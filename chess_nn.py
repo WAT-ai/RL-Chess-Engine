@@ -132,7 +132,3 @@ if(__name__ == "__main__"):
     output = chessNN(input)
 
     print(output[0].shape, output[1].shape)
-
-
-
-

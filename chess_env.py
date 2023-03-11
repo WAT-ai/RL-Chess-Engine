@@ -1,5 +1,6 @@
 import chess
 import numpy as np
+import torch
 
 
 class ChessEnv(chess.Board):
@@ -76,8 +77,8 @@ def state_to_alpha_zero_input(state):
     """
     # state is of type chess.board
     if(isinstance(state, chess.Board)):
-        # initially it was 8 by 8 by 14, but the last two matrices are used for repition checking, but those values can be represented as a boolean
-        array = np.zeros((8, 8, 19), dtype=np.int)
+        # initially it was 8 by 8 by 19, but the last two matrices are used for repition checking, but those values can be represented as a boolean
+        array = np.zeros((8, 8, 19), dtype=int)
 
         for square, piece in state.piece_map().items():
             rank, file = chess.square_rank(square), chess.square_file(square)
@@ -109,7 +110,7 @@ def state_to_alpha_zero_input(state):
         #array[:, :, 12] = state.is_repetition(2)
         #array[:, :, 13] = state.is_repetition(3)
 
-        # instead of 8 14 by 8 matrices, we get 14 8 by 8 matrices due to the transpose
+        # instead of 8 19 by 8 matrices, we get 19 8 by 8 matrices due to the transpose
         # castling_rights represented
         # for turn, True is white's turn, and False is black's turn
-        return array.transpose(2, 0, 1)
+        return torch.Tensor(array.transpose(2, 0, 1))

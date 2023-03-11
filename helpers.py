@@ -61,7 +61,7 @@ for trip in UNDERPROMOTION_MOVE_PLANES:
                 plane.append(Move(square, 100))
         planes.append(plane)
 
-moves = np.array(planes).reshape((73, 8, 8))
+moves = np.array(planes).reshape((76, 8, 8))
 
 
 def policy_to_move_probabilities(policy: np.ndarray):
@@ -76,7 +76,7 @@ def move_probabilities_to_policy(move_probabilities: dict):
     """
     Convert a dictionary of move probabilities to a policy array.
     """
-    policy = np.zeros((73, 8, 8))
+    policy = np.zeros((76, 8, 8))
     for move, probability in move_probabilities.items():
         policy[moves == move] = probability
     return policy
