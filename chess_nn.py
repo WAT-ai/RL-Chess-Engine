@@ -11,8 +11,8 @@ class PolicyNN(nn.Module):
         super(PolicyNN, self).__init__()
         
 
-        self.convolution = nn.Conv2d(256, 73, kernel_size=1, stride=1)
-        self.bn = nn.BatchNorm2d(73)
+        self.convolution = nn.Conv2d(256, 76, kernel_size=1, stride=1)
+        self.bn = nn.BatchNorm2d(76)
         self.soft_max = nn.Softmax()
 
 

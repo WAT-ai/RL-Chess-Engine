@@ -1,6 +1,7 @@
 import math
 import torch
 from chess_env import *
+from typing import Callable, Any, Dict
 
 num_simulations = 100
 stop_threshold = 0.1
@@ -8,7 +9,7 @@ stop_threshold = 0.1
 class MCTS:
     def __init__(
         self,
-        initial_state: str,
+        initial_state: ChessEnv,
         model: torch.nn.Module,
         # environment: Any,
         state_to_model_input: Callable[[Any], torch.Tensor],
@@ -26,8 +27,10 @@ class MCTS:
         """
         MCTS algorithm, select, expand, backpropagate.
         """
-        policy = self.model(self.state_to_model_input(self.root.board_state))
+        policy = self.model(self.state_to_model_input(self.current_node.board_state).unsqueeze(0))[1]
         move_probabilities = self.policy_to_move_probabilities(policy)
+        for move, probability in move_probabilities.items():
+            print(move, probability.item())
 
         self.current_node.expand(move_probabilities)
 
@@ -41,9 +44,7 @@ class MCTS:
                 if node is None:
                     node = last_node
                     break
-        
-            value = self.model(self.state_to_model_input(node.board_state))
-            value = value[0]
+            value = self.model(self.state_to_model_input(node.board_state).unsqueeze(0))[0]
 
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
@@ -90,7 +91,7 @@ class Node:
         """
         Calculate the UCB score for the given node.
         """
-        return self.value_sum + self.prior * math.sqrt(math.log(self.parent.visit_count + 1, math.e) / self.visit_count + 1)
+        return self.value_sum + self.prior * math.sqrt(math.log(self.parent.visit_count + 1, math.e) / (self.visit_count + 1))
 
 
     def is_expanded(self):
@@ -104,10 +105,10 @@ class Node:
         """
         Expand current node based on the possible moves.
         """
-        board = chess.Board(self.root.board_state)
-        for move, prob in move_probabilities:
-            board.push(move)
-            self.children[move] = (Node(board.fen(), self.player * - 1, self, prob))
+        board = self.board_state
+        for possible_move in self.board_state.get_possible_moves():
+            board.push(possible_move)
+            self.children[possible_move] = (Node(board, self.player * - 1, self, move_probabilities[possible_move]))
             board.pop()
 
 
@@ -118,7 +119,7 @@ class Node:
         highest_ucb = -math.inf
         selected_child = None
 
-        for child in self.children:
+        for child in self.children.values():
             ucb = child.ucb_score()
             if ucb > highest_ucb:
                 highest_ucb = ucb

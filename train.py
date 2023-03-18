@@ -19,8 +19,8 @@ def play_game(white, black=None):
     :return:
     """
     chess_env = ChessEnv() 
-    mcts_white = MCTS(chess_env.get_state(), white, state_to_alpha_zero_input, policy_to_move_probabilities)
-    mcts_black = MCTS(chess_env.get_state(), black, state_to_alpha_zero_input, policy_to_move_probabilities) if black is not None else None
+    mcts_white = MCTS(chess_env, white, state_to_alpha_zero_input, policy_to_move_probabilities)
+    mcts_black = MCTS(chess_env, black, state_to_alpha_zero_input, policy_to_move_probabilities) if black is not None else None
     # get_reward() returns 1 if win for white, 0 for draw, -1 for loss for white, None if game is not over
     while(chess_env.get_reward() is None):
         current_mcts = mcts_white
