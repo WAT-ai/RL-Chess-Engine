@@ -29,8 +29,6 @@ class MCTS:
         """
         policy = self.model(self.state_to_model_input(self.current_node.board_state).unsqueeze(0))[1]
         move_probabilities = self.policy_to_move_probabilities(policy)
-        for move, probability in move_probabilities.items():
-            print(move, probability.item())
 
         self.current_node.expand(move_probabilities)
 
@@ -132,7 +130,10 @@ class Node:
         """
         Backpropagate the value of the current node up to the root node.
         """
-        if (self.player == player):
+        if self.parent is None:
+            return
+
+        if self.player == player:
             self.value_sum += value
         else:
             self.value_sum -= player
