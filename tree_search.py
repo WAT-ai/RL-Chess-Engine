@@ -2,6 +2,7 @@ import math
 import torch
 from chess_env import *
 from typing import Callable, Any, Dict
+import copy
 
 num_simulations = 5
 stop_threshold = 0.1
@@ -107,7 +108,7 @@ class Node:
 
         for possible_move in self.board_state.get_possible_moves():
             board.push(possible_move)
-            self.children[possible_move] = (Node(board, self.player * - 1, self, move_probabilities[possible_move]))
+            self.children[possible_move] = (Node(copy.deepcopy(board), self.player * - 1, self, move_probabilities[possible_move]))
             board.pop()
 
 
