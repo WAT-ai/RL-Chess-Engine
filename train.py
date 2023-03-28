@@ -7,8 +7,6 @@ from tree_search import MCTS
 from tree_search import Node
 from helpers import move_probabilities_to_policy, policy_to_move_probabilities
 
-
-NUM_SIMULATIONS = 100
 NUM_EPISODES = 10
 LEARNING_RATE = 0.001
 
@@ -30,9 +28,12 @@ def play_game(white, black=None):
             current_nn = black
             current_mcts = mcts_black
 
-        current_mcts.search(NUM_SIMULATIONS, current_nn)
-        chess_env.step(current_mcts.current_node.select_move())
-        mcts_white.update_state(chess_env.get_state())
+        current_mcts.search()
+        move = current_mcts.current_node.select_move()
+        print(f"\n {mcts_white.current_node.board_state}")
+        print(f"{move} \n")
+        chess_env.step(move)
+        mcts_white.update_state(move)
         if mcts_black is not None:
             mcts_black.update_state(chess_env.get_state())
 

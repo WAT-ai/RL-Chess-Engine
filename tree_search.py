@@ -3,7 +3,7 @@ import torch
 from chess_env import *
 from typing import Callable, Any, Dict
 
-num_simulations = 100
+num_simulations = 5
 stop_threshold = 0.1
 
 class MCTS:
@@ -42,12 +42,12 @@ class MCTS:
                 if node is None:
                     node = last_node
                     break
-            value = self.model(self.state_to_model_input(node.board_state).unsqueeze(0))[0]
+            value, policy = self.model(self.state_to_model_input(node.board_state).unsqueeze(0))
 
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
                 # If the game is a draw (from the perspective of the value network), continue expansion
-                move_probabilities = self.policy_model.predict(self.current_node.board_state) 
+                move_probabilities = self.policy_to_move_probabilities(policy)
                 node.expand(move_probabilities)
 
             node.backpropagate(value, node.player)
@@ -104,6 +104,7 @@ class Node:
         Expand current node based on the possible moves.
         """
         board = self.board_state
+
         for possible_move in self.board_state.get_possible_moves():
             board.push(possible_move)
             self.children[possible_move] = (Node(board, self.player * - 1, self, move_probabilities[possible_move]))
@@ -130,17 +131,15 @@ class Node:
         """
         Backpropagate the value of the current node up to the root node.
         """
-        if self.parent is None:
-            return
-
-        if self.player == player:
+        if (self.player == player):
             self.value_sum += value
         else:
             self.value_sum -= player
 
         self.visit_count += 1
 
-        self.parent.backpropagate(value, player * -1)
+        if self.parent:
+            self.parent.backpropagate(value, player * -1)
 
 
     def select_move(self):
@@ -154,7 +153,7 @@ class Node:
         where N(s, a) is the number of times action a was taken in state s
         """
         # Select action a with highest visit count
-        visit_counts = [child.visit_count for child in self.children]
+        visit_counts = [child.visit_count for child in self.children.values()]
         moves = [move for move in self.children.keys()]
         max_visit_count = max(visit_counts)
         index = visit_counts.index(max_visit_count)
