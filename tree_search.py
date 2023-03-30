@@ -4,7 +4,7 @@ from chess_env import *
 from typing import Callable, Any, Dict
 import copy
 
-num_simulations = 5
+num_simulations = 2
 stop_threshold = 0.1
 
 class MCTS:
@@ -79,7 +79,7 @@ class Node:
         self.player = player
         self.prior = prior
         self.value_sum = 0
-        self.visit_count = 0
+        self.visit_count = 1
         self.children = {}
         self.parent = parent
         self.reward = 0
