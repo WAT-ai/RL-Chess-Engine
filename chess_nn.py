@@ -9,10 +9,8 @@ class PolicyNN(nn.Module):
     """
     def __init__(self):
         super(PolicyNN, self).__init__()
-        
-
-        self.convolution = nn.Conv2d(256, 76, kernel_size=1, stride=1)
-        self.bn = nn.BatchNorm2d(76)
+        self.convolution = nn.Conv2d(256, 88, kernel_size=1, stride=1)
+        self.bn = nn.BatchNorm2d(88)
         self.soft_max = nn.Softmax()
 
 

@@ -96,7 +96,7 @@ def state_to_alpha_zero_input(state):
 
             array[rank, file, idx + offset] = 1
 
-        array[:,:,12] = state.is_repetition(3)
+        array[:, :, 12] = state.is_repetition(3)
         array[:, :, 13] = state.has_kingside_castling_rights(color=chess.WHITE)
         array[:, :, 14] = state.has_queenside_castling_rights(color=chess.WHITE)
         array[:, :, 15] = state.has_kingside_castling_rights(color=chess.BLACK)
