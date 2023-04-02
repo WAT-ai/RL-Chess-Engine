@@ -31,7 +31,7 @@ def play_game(white, black=None):
         current_mcts.search()
         move = current_mcts.current_node.select_move()
         # print(f"\n {mcts_white.current_node.board_state}")
-        print(move)
+        # print(move)
         chess_env.step(move)
         mcts_white.update_state(move)
         if mcts_black is not None:
@@ -56,8 +56,6 @@ def train():
         predicted_value, predicted_policy = chess_nn(torch.stack([state_to_alpha_zero_input(node.board_state) for node in experiences]))
         target_value = torch.tensor([node.reward for node in experiences]).unsqueeze(1).float()
         target_policy = torch.tensor([move_probabilities_to_policy(node.get_move_probabilities()) for node in experiences]).float()
-        print(predicted_policy.dtype)
-        print(target_policy.dtype)
         loss_value = F.mse_loss(predicted_value, target_value)
         loss_policy = F.mse_loss(predicted_policy, target_policy)
         loss = loss_value + loss_policy

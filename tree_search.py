@@ -4,7 +4,7 @@ from chess_env import *
 from typing import Callable, Any, Dict
 import copy
 
-num_simulations = 2
+num_simulations = 20
 stop_threshold = 0.1
 
 class MCTS:
