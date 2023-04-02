@@ -30,8 +30,8 @@ def play_game(white, black=None):
 
         current_mcts.search()
         move = current_mcts.current_node.select_move()
-        # print(f"\n {mcts_white.current_node.board_state}")
-        # print(move)
+        print(f"\n {mcts_white.current_node.board_state}")
+        print(move)
         chess_env.step(move)
         mcts_white.update_state(move)
         if mcts_black is not None:
@@ -50,12 +50,11 @@ def train():
     experiences = []
     for _ in range(NUM_EPISODES): 
         episode_reward, mcts_white = play_game(chess_nn)
-        print(episode_reward)
         store_experiences(mcts_white.current_node, episode_reward, experiences)
         # Passes a list of size (num_experiences, 19, 8, 8) to chess_nn
-        predicted_value, predicted_policy = chess_nn(torch.stack([state_to_alpha_zero_input(node.board_state) for node in experiences]))
-        target_value = torch.tensor([node.reward for node in experiences]).unsqueeze(1).float()
-        target_policy = torch.tensor([move_probabilities_to_policy(node.get_move_probabilities()) for node in experiences]).float()
+        predicted_value, predicted_policy = chess_nn(torch.stack([state_to_alpha_zero_input(tuple[0]) for tuple in experiences]))
+        target_value = torch.tensor([tuple[1] for tuple in experiences]).unsqueeze(1).float()
+        target_policy = torch.tensor([move_probabilities_to_policy(tuple[2]) for tuple in experiences]).float()
         loss_value = F.mse_loss(predicted_value, target_value)
         loss_policy = F.mse_loss(predicted_policy, target_policy)
         loss = loss_value + loss_policy
@@ -69,10 +68,9 @@ def train():
 def store_experiences(node: Node, episode_reward: int, experiences: list):
     # Parent of root node will be none
     if node is not None:
+        if(len(experiences) >= 1000):
+            experiences.pop(0)
         node.reward = abs(episode_reward)
-        experiences.append(node)
+        experiences.append((node.board_state, node.reward, node.get_move_probabilities()))
         # Next layer of MCTS will correspond to opposite color, i.e. reward of parent node should be the opposite of child node
         store_experiences(node.parent, node.reward * -1, experiences)
-
-
-

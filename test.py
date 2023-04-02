@@ -12,16 +12,6 @@ white = ChessNN()
 
 test_tensor = torch.randn(76, 8, 8)
 
-move_probabilities = (policy_to_move_probabilities(test_tensor))
-
-for move in move_probabilities.keys():
-    try:
-        print(move)
-    except:
-        pass
-
-# train()
-
 # model_output = white(state_to_alpha_zero_input(chess_env_2).unsqueeze(0))[1]
 
 # result = policy_to_move_probabilities(model_output.detach().numpy())
@@ -31,6 +21,8 @@ for move in move_probabilities.keys():
 #         print(move)
 #     except:
 #         pass
+
+train()
 
 # mcts_white = MCTS(chess_env_2, white, state_to_alpha_zero_input, policy_to_move_probabilities)
 
