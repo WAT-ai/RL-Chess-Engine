@@ -65,7 +65,7 @@ for trip in UNDERPROMOTION_MOVE_PLANES:
         for square in SQUARES:
             up_square = square // 8
             right_square = square % 8
-            if 0 <= (up_square + up_plane) < 8 and 0 <= (right_square + right_plane) < 8:
+            if square + trip in SQUARES:
                 plane.append(Move(square, square + trip, promotion=piece))
             else:
                 plane.append(Move(square, 100))
