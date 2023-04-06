@@ -6,11 +6,11 @@ from tree_search import MCTS
 from train import play_game, train
 import torch
 
-chess_env_2 = ChessEnv()
-
-white = ChessNN()
-
-test_tensor = torch.randn(76, 8, 8)
+# chess_env_2 = ChessEnv()
+#
+# white = ChessNN()
+#
+# test_tensor = torch.randn(76, 8, 8)
 
 # model_output = white(state_to_alpha_zero_input(chess_env_2).unsqueeze(0))[1]
 
