@@ -30,7 +30,7 @@ def play_game(white, black=None):
 
         current_mcts.search()
         move = current_mcts.current_node.select_move()
-        print(f"\n {mcts_white.current_node.board_state}")
+        print(f"\n {mcts_white.current_node.board_state_fen}")
         print(move)
         chess_env.step(move)
         mcts_white.update_state(move)

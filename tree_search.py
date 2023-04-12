@@ -16,7 +16,7 @@ class MCTS:
         state_to_model_input: Callable[[Any], torch.Tensor],
         policy_to_move_probabilities: Callable[[torch.Tensor], Dict[Any, float]]
     ):
-        self.root = Node(initial_state, 1, None, 0)
+        self.root = Node(initial_state.fen(), 1, None, 0)
         self.current_node = self.root
         self.model = model
         # self.environment = environment
@@ -28,7 +28,8 @@ class MCTS:
         """
         MCTS algorithm, select, expand, backpropagate.
         """
-        policy = self.model(self.state_to_model_input(self.current_node.board_state).unsqueeze(0))[1]
+        board = chess.Board(self.current_node.board_state_fen)
+        policy = self.model(self.state_to_model_input(board).unsqueeze(0))[1]
         move_probabilities = self.policy_to_move_probabilities(policy)
 
         self.current_node.expand(move_probabilities)
@@ -43,7 +44,8 @@ class MCTS:
                 if node is None:
                     node = last_node
                     break
-            value, policy = self.model(self.state_to_model_input(node.board_state).unsqueeze(0))
+            board = chess.Board(node.board_state_fen)
+            value, policy = self.model(self.state_to_model_input(board).unsqueeze(0))
 
             # Continue expansion for if the value network returns [-stop_threshold, stop_threshold]
             if (value > -stop_threshold) and (value < stop_threshold):
@@ -74,8 +76,8 @@ class MCTS:
 
 
 class Node:
-    def __init__(self, board_state, player, parent, prior):
-        self.board_state = board_state
+    def __init__(self, board_state_fen, player, parent, prior):
+        self.board_state_fen = board_state_fen
         self.player = player
         self.prior = prior
         self.value_sum = 0
@@ -104,11 +106,11 @@ class Node:
         """
         Expand current node based on the possible moves.
         """
-        board = self.board_state
+        board = chess.Board(self.board_state_fen)
 
-        for possible_move in self.board_state.get_possible_moves():
+        for possible_move in list(board.legal_moves):
             board.push(possible_move)
-            self.children[possible_move] = (Node(copy.deepcopy(board), self.player * - 1, self, move_probabilities[possible_move]))
+            self.children[possible_move] = (Node(board.fen(), self.player * - 1, self, move_probabilities[possible_move]))
             board.pop()
 
 
